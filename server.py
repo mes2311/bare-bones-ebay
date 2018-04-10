@@ -22,7 +22,6 @@ from flask import Flask, request, render_template, g, redirect, Response
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
 
-
 #
 # The following is a dummy URI that does not connect to a valid database. You will need to modify it to connect to your Part 2 database in order to use the data.
 #
@@ -34,8 +33,7 @@ app = Flask(__name__, template_folder=tmpl_dir)
 #
 #     DATABASEURI = "postgresql://gravano:foobar@35.227.79.146/proj1part2"
 #
-DATABASEURI = "postgresql://user:password@35.227.79.146/proj1part2"
-
+DATABASEURI = "postgresql://mes2311:5302@35.227.79.146/proj1part2"
 
 #
 # This line creates a database engine that knows how to connect to the URI above.
