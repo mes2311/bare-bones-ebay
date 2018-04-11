@@ -98,6 +98,17 @@ def addr_view():
 def list_search():
   return render_template('list-search.html')
 
+@app.route('watch')
+def watch():
+  username = request.form['username']
+  listID = request.form['listID']
+
+  #SANITIZE INPUTS
+
+  g.conn.execute("INSERT INTO watches VALUES (%s, %d)", (username, listID))
+
+  return redirect('/list-search')
+
 @app.route('/list-create')
 def list_create():
   return render_template('list-create.html')
