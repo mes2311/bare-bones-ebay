@@ -1,0 +1,35 @@
+<html>
+ <body>
+  <p> Please fill out the following form. You can provide a photo URL for your profile but you aren't required to. </p>
+  <p> If you are signing up as a seller please consider providing a store name and description. These fields
+      are not required but help users find your account. Similarly, you may want to fill out your customer bio
+      if you would like sellers to be able to find you and give you offers </p>
+
+  <form method ="POST" action ="/adduser">
+   Username:<br>
+   <input type="text" name="username" required><br>
+   First name:<br>
+   <input type="text" name="firstname"><br>
+   Last name:<br>
+   <input type="text" name="lastname"><br>
+   Email:<br>
+   <input type="text" name="email" required><br>
+   Photo URL:<br>
+   <input type="text" name="photo"><br>
+   Account Type:<br>
+   <select name="acct_type">
+   <option value="customer">Customer</option>
+   <option value="seller">Seller</option> 
+   <option value="both">Both</option>
+   </select><br> 
+   Customer bio:<br>
+   <input type="text" name="bio" size="35"><br>
+   Store name:<br>
+   <input type="text" name="storename"><br>
+   Store description:<br>
+   <input type="text" name="storedes" size="35"><br>
+
+   <input type="submit" value="Submit">
+ </body>
+</html>
+

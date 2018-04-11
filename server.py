@@ -4,6 +4,7 @@
 #COMS W4111 Databases Project
 
 import os
+import datetime
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
 from flask import Flask, request, render_template, g, redirect, Response
@@ -42,6 +43,55 @@ def teardown_request(exception):
   except Exception as e:
     pass
 
+
+#
+# This is an example of a different path.  You can see it at:
+# 
+#     localhost:8111/another
+#
+# Notice that the function name is another() rather than index()
+# The functions for each app.route need to have different names
+#
+@app.route('/signup')
+def signup():
+  return render_template("signup.html")
+
+@app.route('/user')
+def user():
+  return render_template("user.html")
+
+# Example of adding new data to the database
+@app.route('/adduser', methods=['POST'])
+def adduser():
+  username = request.form['username']
+  firstname = request.form['firstname']
+  print(type(firstname));
+  lastname = request.form['lastname']
+  email = request.form['email']
+  photo = request.form['photo']
+  acct_type = request.form['acct_type']
+  bio = request.form['bio']
+  storename = request.form['storename']
+  storedes = request.form['storedes']
+
+  join_date = str(datetime.date.today())
+  #SANITIZE INPUTS
+
+  g.conn.execute("INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s)", (username, firstname, lastname, email, join_date, photo))
+  
+  if acct_type == 'customer' or acct_type == 'both':
+    g.conn.execute("INSERT INTO customers VALUES(%s, %s, null)", (username, bio))
+
+  if acct_type == 'seller' or acct_type == 'both':
+    g.conn.execute("INSERT INTO sellers VALUES (%s, %s, %s, null)", (username, storename, storedes))
+
+  return redirect('/user')
+
+
+@app.route('/login')
+def login():
+    abort(401)
+    this_is_never_executed()
 
 #
 # @app.route is a decorator around index() that means:
@@ -103,32 +153,6 @@ def index():
   # for example, the below file reads template/index.html
   #
   return render_template("index.html")
-
-#
-# This is an example of a different path.  You can see it at:
-# 
-#     localhost:8111/another
-#
-# Notice that the function name is another() rather than index()
-# The functions for each app.route need to have different names
-#
-@app.route('/another')
-def another():
-  return render_template("another.html")
-
-
-# Example of adding new data to the database
-@app.route('/add', methods=['POST'])
-def add():
-  name = request.form['name']
-  g.conn.execute('INSERT INTO test(name) VALUES (%s)', name)
-  return redirect('/')
-
-
-@app.route('/login')
-def login():
-    abort(401)
-    this_is_never_executed()
 
 
 if __name__ == "__main__":
