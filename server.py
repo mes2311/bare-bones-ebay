@@ -80,15 +80,6 @@ def adduser():
 
   join_date = str(datetime.date.today())
 
-  #SANITIZE INPUTS
-  #sanitize(username)
-  #sanitize(firstname)
-  #sanitize(lastname)
-  #sanitize(email)
-  #sanitize(photo)
-  #sanitize(bio)
-  #sanitize(storename)
-  #sanitize(storedes)
 
   g.conn.execute("INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s)", (username, firstname, lastname, email, join_date, photo))
   
@@ -116,7 +107,6 @@ def addr_insert():
   
   aid = randint(100000, 999999)
 
-  #SANITIZE INPUTS
 
   g.conn.execute("INSERT INTO addresses VALUES (%s, %s, %s, %s, %s, %s, %s)", (aid, firstname, lastname, street, city, state, zipcode))
   g.conn.execute("INSERT INTO addr_used_by VALUES (%s, %s)", (username, aid))
@@ -129,6 +119,29 @@ def addr_insert():
 @app.route('/addr-view')
 def addr_view():
   return render_template('addr-view.html')
+
+
+@app.route('/addr-calc', methods=['post'])
+def addr_calc():
+  username = request.form['username']
+
+  temp = []
+  table = '<table> <tr><th>Address ID</th> <th>First name</th> <th>Last name</th>  <th>Street</th> <th>City</th> <th>State</th> <th>ZIP</th></tr>'
+  cursor = g.conn.execute("SELECT * FROM addr_used_by WHERE username = %s", username)
+  for tup in cursor:
+    aid = int(tup['aid'])
+    results = g.conn.execute("SELECT * FROM addresses WHERE aid = %s", aid)
+    for addr in results:
+      table = table + '<tr>' + '<td>' + str(addr['aid']) + '</td>' + '<td>' + addr['firstname'] + '</td>' + '<td>' + addr['lastname'] + '</td>' + '<td>' + addr['street'] + '</td>' + '<td>' + addr['city'] + '</td>' + '<td>' + str(addr['state']) + '</td>' + '<td>' + str(addr['zip']) + '</td>' + '</tr>'
+    results.close()
+  cursor.close()
+
+  table = table + '</table>'
+  temp.append(table)
+  
+  context = dict(temp = temp) 
+  return render_template('addr-show.html', **context)
+
 
 @app.route('/list-search')
 def list_search():
@@ -144,55 +157,79 @@ def listed():
   if text == '':
     return render_template('list-search.html')
   
-  #SANITIZE INPUTS
-  #sanitize(text)
   text = '%' + text + '%'
 
+  temp = []
   table = '<table> <tr><th>list_id</th> <th>Seller name</th> <th>order_id</th>  <th>Title</th> <th>Category</th> <th>Returnable</th> <th>Price</th> <th>Shipping price</th> </tr>'
 
   if option == 'title':
-    cursor = g.conn.execute("SELECT * FROM  listings WHERE title LIKE %s", text) 
+    cursor = g.conn.execute("SELECT * FROM  listings WHERE title LIKE %s AND %s <= price  AND price <= %s", (text, min_price, max_price)) 
     for result in cursor:
       table = table + '<tr>' + '<td>' + str(result['list_id']) + '</td>' + '<td>' + result['username'] + '</td>' + '<td>' + str(result['order_id'])
-      table = table + '</td>' + '<td>' + result['title'] + '</td>' + '<td>' + result['category'] + '</td>' + '<td>' + str(result['returnable']) 
+      table = table + '</td>' + '<td>' + result['title'] + '</td>' + '<td>' + str(result['category']) + '</td>' + '<td>' + str(result['returnable']) 
       table = table + '</td>' + '<td>' + str(result['price']) +  '</td>' + '<td>' + str(result['shipping_price']) + '</td>' + '</tr>' 
     cursor.close()
     table = table + '</table>'
-
+    temp.append(table)
 
   if option == 'seller_name':
     cursor = g.conn.execute("SELECT * FROM  listings WHERE username  LIKE %s", text) 
     for result in cursor:
       table = table + '<tr>' + '<td>' + str(result['list_id']) + '</td>' + '<td>' + result['username'] + '</td>' + '<td>' + str(result['order_id'])
-      table = table + '</td>' + '<td>' + result['title'] + '</td>' + '<td>' + result['category'] + '</td>' + '<td>' + str(result['returnable']) 
+      table = table + '</td>' + '<td>' + result['title'] + '</td>' + '<td>' + str(result['category']) + '</td>' + '<td>' + str(result['returnable']) 
       table = table + '</td>' + '<td>' + str(result['price']) +  '</td>' + '<td>' + str(result['shipping_price']) + '</td>' + '</tr>' 
     cursor.close()
     table = table + '</table>'
-
+    temp.append(table)
 
   if option == 'category':
     cursor = g.conn.execute("SELECT * FROM  listings WHERE category LIKE %s", text) 
     for result in cursor:
       table = table + '<tr>' + '<td>' + str(result['list_id']) + '</td>' + '<td>' + result['username'] + '</td>' + '<td>' + str(result['order_id'])
-      table = table + '</td>' + '<td>' + result['title'] + '</td>' + '<td>' + result['category'] + '</td>' + '<td>' + str(result['returnable']) 
+      table = table + '</td>' + '<td>' + result['title'] + '</td>' + '<td>' + str(result['category']) + '</td>' + '<td>' + str(result['returnable']) 
       table = table + '</td>' + '<td>' + str(result['price']) +  '</td>' + '<td>' + str(result['shipping_price']) + '</td>' + '</tr>' 
     cursor.close()
     table = table + '</table>'
+    temp.append(table)
 
- 
-  return table
- # return render_template('listed.html', table)
+  context = dict(temp = temp) 
+  return render_template('listed.html', **context)
 
-@app.route('/watch')
+@app.route('/watch', methods=['POST'])
 def watch():
   username = request.form['username']
-  listID = request.form['listID']
+  listID = request.form['list_id']
 
-  #SANITIZE INPUTS
+  g.conn.execute("INSERT INTO watches VALUES (%s, %s)", (username, listID))
 
-  g.conn.execute("INSERT INTO watches VALUES (%s, %d)", (username, listID))
+  return redirect('/user')
 
-  return redirect('/list-search')
+@app.route('/detail', methods=['POST'])
+def detail():
+  listID = request.form['list_id']
+
+  temp = []
+  table = '<table> <tr><th>Item Name</th> <th>Item Condition</th> <th>Item Description</th></tr>'
+
+  items = g.conn.execute("SELECT name, item_condition, description FROM items WHERE list_id = %s", listID)
+  images = g.conn.execute("SELECT image_url FROM images WHERE list_id = %s", listID)
+
+  for result in items:
+   table = table + '<tr>' + '<td>' + result['name'] + '</td>' + '<td>' + result['item_condition'] + '</td>' + '<td>' + str(result['description']) + '</td>' + '</tr>'
+  table = table + '</table>' + '<h2> Images </h2>'
+
+  items.close()
+  for image in images:
+    image_URI = str(image['image_url'])
+    table = table + '<img src= "' + image_URI + '" width=500 height="400">'
+
+  images.close()
+  temp.append(table)
+  context = dict(temp = temp)
+
+  return render_template('/ldetail.html', **context)
+
+
 
 @app.route('/list-create')
 def list_create():

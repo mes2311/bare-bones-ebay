@@ -1,5 +1,48 @@
 <html>
- <body>
-   {{ table }}
- </body>
+<head>
+<style>
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 4px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+</style>
+</head>
+
+<body>
+<h1> Listings </h1>
+{% autoescape false %}
+   {% for n in temp %}
+	{{ n }}
+   {% endfor %}
+{% endautoescape %}
+
+<h2> See a listing you fancy? </h2>
+<p>  You can watch it by entering your username and the list_id you see above!</p>
+
+  <form method ="POST" action ="/watch">
+   Your Username:
+   <input type="text" name="username"><br>
+   Listing ID:
+   <input type="number" name="list_id"><br>
+   <input type="submit" value="Watch it!">
+  </form> 
+
+<h2> Want to inspect a listing further?</h2>
+<p>  Enter its list_id to view items and images in the listing (if there are any!) </p>
+ <form method ="POST" action="/detail">
+ Listing ID:
+ <input type ="number" name="list_id"><br> 
+ <input type ="submit" value="Search!"><br>
+</body>
 </html>

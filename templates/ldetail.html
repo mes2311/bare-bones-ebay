@@ -1,0 +1,32 @@
+<html>
+<head>
+<style>
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 4px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+</style>
+</head>
+
+<body>
+<h1> Listing Information </h1>
+{% autoescape false %}
+   {% for n in temp %}
+	{{ n }}
+   {% endfor %}
+{% endautoescape %}
+<br>
+<a href="/user">Back to User Dashboard</a>
+</body>
+</html>
