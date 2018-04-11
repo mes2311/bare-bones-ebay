@@ -1,0 +1,24 @@
+<html>
+ <body>
+  <h1> Add a PayPal Account </h1>
+  <form method ="POST" action ="/pay-insert">
+   Username:<br>
+   <input type="text" name="username" required><br>
+   PayPal Email:<br>
+   <input type="text" name="email" required><br>
+   Password:<br>
+   <input type="password" name="password" required><br>
+   Account Type:<br>
+   <select name="acct_type">
+   <option value="Customer">Customer</option>
+   <option value="Business">Business</option> 
+   </select><br> 
+
+
+   <br><input type="submit" value="Submit"><br>
+
+   <br>
+   <a href="/user">Back to User Dashboard</a>
+ </body>
+</html>
+

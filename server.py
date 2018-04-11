@@ -273,6 +273,19 @@ def cust_search():
 def pay_add():
   return render_template('pay-add.html')
 
+@app.route('/pay-insert', methods=['POST'])
+def pay_insert():
+  username = request.form['username']
+  email = request.form['email']
+  password = request.form['password']
+  acct_type = request.form['acct_type']
+
+  g.conn.execute("INSERT INTO paypalaccts VALUES (%s, %s, %s)", (email, password, acct_type))
+  g.conn.execute("INSERT INTO user_pp_accts VALUES (%s, %s)", (email, username))
+
+  return redirect('/user')
+
+
 @app.route('/order')
 def order():
   return render_template('order.html')
