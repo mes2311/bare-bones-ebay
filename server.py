@@ -4,6 +4,7 @@
 #COMS W4111 Databases Project
 
 import os
+import re
 import datetime
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
@@ -21,6 +22,10 @@ engine = create_engine(DATABASEURI)
 #Example of running queries in your database
 #engine.execute("""CREATE TABLE IF NOT EXISTS test (id serial, name text);""")
 #engine.execute("""INSERT INTO test(name) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');""")
+
+#Clean up texts so that other queries can't be executed through commenting out the intended query
+# def sanitize(text):
+#  text = re.sub("""[:;'"#$%^&*!)(<>/\]""", '', text)
 
 @app.before_request
 def before_request():
@@ -64,7 +69,6 @@ def user():
 def adduser():
   username = request.form['username']
   firstname = request.form['firstname']
-  print(type(firstname));
   lastname = request.form['lastname']
   email = request.form['email']
   photo = request.form['photo']
@@ -74,7 +78,16 @@ def adduser():
   storedes = request.form['storedes']
 
   join_date = str(datetime.date.today())
+
   #SANITIZE INPUTS
+  #sanitize(username)
+  #sanitize(firstname)
+  #sanitize(lastname)
+  #sanitize(email)
+  #sanitize(photo)
+  #sanitize(bio)
+  #sanitize(storename)
+  #sanitize(storedes)
 
   g.conn.execute("INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s)", (username, firstname, lastname, email, join_date, photo))
   
@@ -98,7 +111,42 @@ def addr_view():
 def list_search():
   return render_template('list-search.html')
 
-@app.route('watch')
+@app.route('/listed', methods=['POST'])
+def listed():
+  option = request.form['selection']
+  text = request.form['input']
+  min_price = request.form['min']
+  max_price = request.form['max']
+
+  #SANITIZE INPUTS
+  #sanitize(text)
+  text = '%' + text + '%'
+
+  table = '<table> <tr><th>list_id</th> <th>username</th> <th>order_id</th>  <th>title</th> <th>category</th> <th>returnable</th> <th>price</th> <th>shipping price</th> </tr>'
+
+ # if option == 'title':
+  cursor = g.conn.execute("SELECT * FROM  listings WHERE title LIKE %s", text) 
+  for result in cursor:
+    table = table + '<tr>' + '<td>' + str(result['list_id']) + '</td>' + '<td>' + result['username'] + '</td>' + '<td>' + str(result['order_id'])
+    table = table + '</td>' + '<td>' + result['title'] + '</td>' + '<td>' + result['category'] + '</td>' + '<td>' + str(result['returnable']) 
+    table = table + '</td>' + '<td>' + str(result['price']) +  '</td>' + '<td>' + str(result['shipping_price']) + '</td>' + '</tr>' 
+
+    print(result)
+  cursor.close()
+
+
+  table = table + '</table>'
+  print(table) 
+ 
+  #if option == 'seller_name':
+  #  g.conn.execute("")
+
+  # if option == 'category':
+ 
+  return table
+ # return render_template('listed.html', table)
+
+@app.route('/watch')
 def watch():
   username = request.form['username']
   listID = request.form['listID']
