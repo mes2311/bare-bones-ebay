@@ -60,7 +60,6 @@ def signup():
 def user():
   return render_template("user.html")
 
-# Example of adding new data to the database
 @app.route('/adduser', methods=['POST'])
 def adduser():
   username = request.form['username']
@@ -86,6 +85,39 @@ def adduser():
     g.conn.execute("INSERT INTO sellers VALUES (%s, %s, %s, null)", (username, storename, storedes))
 
   return redirect('/user')
+
+@app.route('/addr-add')
+def addr_add():
+  return render_template('addr-add.html')
+
+@app.route('/addr-view')
+def addr_view():
+  return render_template('addr-view.html')
+
+@app.route('/list-search')
+def list_search():
+  return render_template('list-search.html')
+
+@app.route('/list-create')
+def list_create():
+  return render_template('list-create.html')
+
+@app.route('/sell-search')
+def sell_search():
+  return render_template('sell-search.html')
+
+@app.route('/cust-search')
+def cust_search():
+  return render_template('cust-search.html')
+
+@app.route('/pay-add')
+def pay_add():
+  return render_template('pay-add.html')
+
+@app.route('/order')
+def order():
+  return render_template('order.html')
+
 
 
 @app.route('/login')
