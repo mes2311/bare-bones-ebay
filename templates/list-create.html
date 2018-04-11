@@ -1,0 +1,36 @@
+<html>
+ <body>
+  <h1> Create a Listing </h1>
+  <p> Please fill out the following form as fully as possible to make a quality listing</p>
+
+  <form method ="POST" action ="/list-insert">
+   Username:<br>
+   <input type="text" name="username" required><br>
+   Listing Title:<br>
+   <input type="text" name="title" required><br>
+   Category:<br>
+   <input type="text" name="category"><br>
+   Is the item Returnable?:<br>
+   <select name="returnable">
+   <option value="True">Yes</option>
+   <option value="False">No</option> 
+   </select><br> 
+   <br>
+   Item Condition:<br>
+   <input type="text" name="condition" required><br>
+   Item Description:<br>
+   <input type="text" name="description"><br>
+   Item Price:<br>
+   <input type="number" name="price" required><br>
+   Shipping Price:<br>
+   <input type="number" name="ship" required><br>
+   
+   Image URL:<br>
+   <input type="text" name="image_URL"><br>
+   <input type="submit" value="create">
+
+  <br><br><br>
+  <a href="/user">Back to User Dashboard</a>
+ </body>
+</html>
+

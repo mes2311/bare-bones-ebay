@@ -235,6 +235,32 @@ def detail():
 def list_create():
   return render_template('list-create.html')
 
+@app.route('/list-insert', methods =['POST'])
+def list_insert():
+  username = request.form['username']
+  title = request.form['title']
+  category = request.form['category']
+  returnable = request.form['returnable']
+  condition = request.form['condition']
+  description = request.form['description']
+  price = request.form['price']
+  ship = request.form['ship']
+  image_url = request.form['image_URL']
+
+  list_id = randint(1000000, 9999999)
+  item_id = randint(1000, 9999)
+  order_id = None;
+
+  g.conn.execute("INSERT INTO listings VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", (list_id, username, order_id, title, category, returnable, price, ship))
+  g.conn.execute("INSERT INTO items VALUES (%s, %s, %s, %s, %s)", (item_id, list_id, title, condition, description))
+
+  if image_url != None and image_url != '':
+    image_id = randint(10000, 99999)
+    g.conn.execute("INSERT INTO images VALUES (%s, %s, %s)", (image_id, list_id, image_url))
+
+  return redirect('/user')
+   
+
 @app.route('/sell-search')
 def sell_search():
   return render_template('sell-search.html')
