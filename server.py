@@ -6,6 +6,7 @@
 import os
 import re
 import datetime
+from random import *
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
 from flask import Flask, request, render_template, g, redirect, Response
@@ -103,6 +104,28 @@ def adduser():
 def addr_add():
   return render_template('addr-add.html')
 
+@app.route('/addr-insert', methods=['POST'])
+def addr_insert():
+  username = request.form['username']
+  firstname = request.form['firstname']
+  lastname = request.form['lastname']
+  street = request.form['street']
+  city = request.form['city']
+  state = request.form['state']
+  zipcode = request.form['zip']
+  
+  aid = randint(100000, 999999)
+
+  #SANITIZE INPUTS
+
+  g.conn.execute("INSERT INTO addresses VALUES (%s, %s, %s, %s, %s, %s, %s)", (aid, firstname, lastname, street, city, state, zipcode))
+  g.conn.execute("INSERT INTO addr_used_by VALUES (%s, %s)", (username, aid))
+
+
+  return redirect('/user')
+
+  
+
 @app.route('/addr-view')
 def addr_view():
   return render_template('addr-view.html')
@@ -118,30 +141,44 @@ def listed():
   min_price = request.form['min']
   max_price = request.form['max']
 
+  if text == '':
+    return render_template('list-search.html')
+  
   #SANITIZE INPUTS
   #sanitize(text)
   text = '%' + text + '%'
 
-  table = '<table> <tr><th>list_id</th> <th>username</th> <th>order_id</th>  <th>title</th> <th>category</th> <th>returnable</th> <th>price</th> <th>shipping price</th> </tr>'
+  table = '<table> <tr><th>list_id</th> <th>Seller name</th> <th>order_id</th>  <th>Title</th> <th>Category</th> <th>Returnable</th> <th>Price</th> <th>Shipping price</th> </tr>'
 
- # if option == 'title':
-  cursor = g.conn.execute("SELECT * FROM  listings WHERE title LIKE %s", text) 
-  for result in cursor:
-    table = table + '<tr>' + '<td>' + str(result['list_id']) + '</td>' + '<td>' + result['username'] + '</td>' + '<td>' + str(result['order_id'])
-    table = table + '</td>' + '<td>' + result['title'] + '</td>' + '<td>' + result['category'] + '</td>' + '<td>' + str(result['returnable']) 
-    table = table + '</td>' + '<td>' + str(result['price']) +  '</td>' + '<td>' + str(result['shipping_price']) + '</td>' + '</tr>' 
+  if option == 'title':
+    cursor = g.conn.execute("SELECT * FROM  listings WHERE title LIKE %s", text) 
+    for result in cursor:
+      table = table + '<tr>' + '<td>' + str(result['list_id']) + '</td>' + '<td>' + result['username'] + '</td>' + '<td>' + str(result['order_id'])
+      table = table + '</td>' + '<td>' + result['title'] + '</td>' + '<td>' + result['category'] + '</td>' + '<td>' + str(result['returnable']) 
+      table = table + '</td>' + '<td>' + str(result['price']) +  '</td>' + '<td>' + str(result['shipping_price']) + '</td>' + '</tr>' 
+    cursor.close()
+    table = table + '</table>'
 
-    print(result)
-  cursor.close()
+
+  if option == 'seller_name':
+    cursor = g.conn.execute("SELECT * FROM  listings WHERE username  LIKE %s", text) 
+    for result in cursor:
+      table = table + '<tr>' + '<td>' + str(result['list_id']) + '</td>' + '<td>' + result['username'] + '</td>' + '<td>' + str(result['order_id'])
+      table = table + '</td>' + '<td>' + result['title'] + '</td>' + '<td>' + result['category'] + '</td>' + '<td>' + str(result['returnable']) 
+      table = table + '</td>' + '<td>' + str(result['price']) +  '</td>' + '<td>' + str(result['shipping_price']) + '</td>' + '</tr>' 
+    cursor.close()
+    table = table + '</table>'
 
 
-  table = table + '</table>'
-  print(table) 
- 
-  #if option == 'seller_name':
-  #  g.conn.execute("")
+  if option == 'category':
+    cursor = g.conn.execute("SELECT * FROM  listings WHERE category LIKE %s", text) 
+    for result in cursor:
+      table = table + '<tr>' + '<td>' + str(result['list_id']) + '</td>' + '<td>' + result['username'] + '</td>' + '<td>' + str(result['order_id'])
+      table = table + '</td>' + '<td>' + result['title'] + '</td>' + '<td>' + result['category'] + '</td>' + '<td>' + str(result['returnable']) 
+      table = table + '</td>' + '<td>' + str(result['price']) +  '</td>' + '<td>' + str(result['shipping_price']) + '</td>' + '</tr>' 
+    cursor.close()
+    table = table + '</table>'
 
-  # if option == 'category':
  
   return table
  # return render_template('listed.html', table)
