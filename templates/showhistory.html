@@ -1,0 +1,45 @@
+<html>
+<head>
+<style>
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 4px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+</style>
+</head>
+
+<body>
+<h2> Your Order History </h2>
+{% autoescape false %}
+   {% for n in temp %}
+	{{ n }}
+   {% endfor %}
+{% endautoescape %}
+
+<h2> Want to see the listings associated with an order? </h2>
+<p>  You can see them by entering an order_id from above!</p>
+
+  <form method ="POST" action ="/orderlist">
+   Order ID:
+   <input type="number" name="order_id">
+   <input type="submit" value="View in detail!">
+  </form> 
+
+
+
+
+<br><br>
+<a href="/user">Back to User Dashboard</a>
+</body>
+</html>

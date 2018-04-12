@@ -1,0 +1,64 @@
+<html>
+<head>
+<style>
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 4px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+</style>
+</head>
+
+<body>
+<h1> Ordering Instructions </h1>
+<p> To place an order, you will need your username, a valid address ID (from your addresses) and <br> 
+a comma separated list of the listings you would like to purchase from. For your convenience, a link <br>
+to searching for your address ID has been provided below </p>
+<a href ="/addr-view">Address Search</a>
+
+<p> You can add as many listings as you'd like to your order. <br>
+"3239795" or "3239795,1220062" or "3239795,1220062,1869873, ..." are all valid entries. <br>
+For your convenience, the available listings are provided below </p>
+
+<h3> Order Form </h3>
+
+ <form method ="POST" action ="/place-order">
+ Username:<br>
+ <input type="text" name="username" ><br>
+ Address ID:<br>
+   <input type="nuber" name="aid"><br>
+ Listings:<br>
+   <input type="text" name="list"  size="35"><br>
+   
+ <br>
+ <input type="submit" value="Place order">
+
+<h2> Available Listings </h2>
+{% autoescape false %}
+   {% for n in temp %}
+	{{ n }}
+   {% endfor %}
+{% endautoescape %}
+<br><br>
+
+<h2> Want to inspect a listing further?</h2>
+<p>  Enter its list_id to view items and images in the listing (if there are any!) </p>
+ <form method ="POST" action="/detail">
+ Listing ID:
+ <input type ="number" name="list_id"> 
+ <input type ="submit" value="Search!"><br>
+
+<br>
+<a href="/user">Back to User Dashboard</a>
+</body>
+</html>

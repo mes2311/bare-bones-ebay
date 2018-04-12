@@ -1,0 +1,46 @@
+<html>
+<head>
+<style>
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 4px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+</style>
+</head>
+
+<body>
+<h1> Query Results </h1>
+{% autoescape false %}
+   {% for n in temp %}
+	{{ n }}
+   {% endfor %}
+{% endautoescape %}
+<br>
+
+<h2> See a seller you like? </h2>
+<p>  You can follow them by entering your username and their seller name you see above!</p>
+
+  <form method ="POST" action ="/follow">
+   Your Username:
+   <input type="text" name="username"><br>
+   Seller name
+   <input type="text" name="seller_name"><br><br>
+   <input type="submit" value="Follow!">
+  </form> 
+
+
+<br><br>
+<a href="/user">Back to User Dashboard</a>
+</body>
+</html>

@@ -107,14 +107,12 @@ def addr_insert():
   
   aid = randint(100000, 999999)
 
-
   g.conn.execute("INSERT INTO addresses VALUES (%s, %s, %s, %s, %s, %s, %s)", (aid, firstname, lastname, street, city, state, zipcode))
   g.conn.execute("INSERT INTO addr_used_by VALUES (%s, %s)", (username, aid))
 
 
   return redirect('/user')
 
-  
 
 @app.route('/addr-view')
 def addr_view():
@@ -146,6 +144,7 @@ def addr_calc():
 @app.route('/list-search')
 def list_search():
   return render_template('list-search.html')
+
 
 @app.route('/listed', methods=['POST'])
 def listed():
@@ -195,6 +194,7 @@ def listed():
   context = dict(temp = temp) 
   return render_template('listed.html', **context)
 
+
 @app.route('/watch', methods=['POST'])
 def watch():
   username = request.form['username']
@@ -203,6 +203,7 @@ def watch():
   g.conn.execute("INSERT INTO watches VALUES (%s, %s)", (username, listID))
 
   return redirect('/user')
+
 
 @app.route('/detail', methods=['POST'])
 def detail():
@@ -230,10 +231,10 @@ def detail():
   return render_template('/ldetail.html', **context)
 
 
-
 @app.route('/list-create')
 def list_create():
   return render_template('list-create.html')
+
 
 @app.route('/list-insert', methods =['POST'])
 def list_insert():
@@ -265,13 +266,101 @@ def list_insert():
 def sell_search():
   return render_template('sell-search.html')
 
+
+@app.route('/sell-query', methods=['POST'])
+def sell_query():
+  selection = request.form['selection']
+  text = request.form['input']
+  rmin = request.form['rmin']
+  rmax = request.form['rmax']
+
+  if text == '' and selection != 'rating':
+    return render_template('sell-search.html')
+  
+  text = '%' + text + '%'
+
+  temp = []
+  table = '<table> <tr><th>Seller name</th> <th>Store Name</th> <th>Store Description</th>  <th>Store Rating</th> </tr>'
+
+  if selection == 'rating':
+    cursor = g.conn.execute("SELECT * FROM sellers WHERE rating >= %s  AND  %s >= rating", (rmin, rmax))
+    for result in cursor:
+      table = table + '<tr>' + '<td>' + result['username'] + '</td>' + '<td>' + str(result['store_name']) + '</td>' + '<td>'
+      table = table + str(result['store_description']) + '</td>' + '<td>' + str(result['rating']) + '</td>' + '</tr>' 
+    cursor.close()
+    table = table + '</table>'
+    temp.append(table)
+
+
+  if selection == 'seller_name':
+    cursor = g.conn.execute("SELECT * FROM sellers WHERE username LIKE %s", text)
+    for result in cursor:
+      table = table + '<tr>' + '<td>' + result['username'] + '</td>' + '<td>' + str(result['store_name']) + '</td>' + '<td>'
+      table = table + str(result['store_description']) + '</td>' + '<td>' + str(result['rating']) + '</td>' + '</tr>' 
+    cursor.close()
+    table = table + '</table>'
+    temp.append(table)
+
+
+  if selection == 'store_name':
+    cursor = g.conn.execute("SELECT * FROM sellers WHERE store_name LIKE %s", text)
+    for result in cursor:
+      table = table + '<tr>' + '<td>' + result['username'] + '</td>' + '<td>' + str(result['store_name']) + '</td>' + '<td>'
+      table = table + str(result['store_description']) + '</td>' + '<td>' + str(result['rating']) + '</td>' + '</tr>' 
+    cursor.close()
+    table = table + '</table>'
+    temp.append(table)
+
+  context = dict(temp = temp) 
+  return render_template('sell-show.html', **context)
+
+
+@app.route('/follow', methods=['POST'])
+def follow():
+  username = request.form['username']
+  seller_name = request.form['seller_name']
+
+  g.conn.execute("INSERT INTO follows VALUES (%s, %s)", (username, seller_name))
+
+  return redirect('/user')
+
+
 @app.route('/cust-search')
 def cust_search():
   return render_template('cust-search.html')
 
+
+@app.route('/cust-query', methods=['POST'])
+def cust_query():
+
+  username = request.form['username']
+  rmin = request.form['rmin']
+  rmax = request.form['rmax']
+
+  if username == '':
+    return render_template('cust-search.html')
+  
+  username = '%' + username + '%'
+
+  temp = []
+  table = '<table> <tr><th>Customer Name</th> <th>Customer Bio</th> <th>Buyer Rating</th>  </tr>'
+
+  cursor = g.conn.execute("SELECT * FROM customers WHERE username LIKE %s AND buyer_rating >= %s  AND  %s >= buyer_rating", (username, rmin, rmax))
+  for result in cursor:
+    table = table + '<tr>' + '<td>' + result['username'] + '</td>' + '<td>' + str(result['bio']) + '</td>' + '<td>'
+    table = table + str(result['buyer_rating']) + '</td>' + '</tr>'  
+  cursor.close()
+  table = table + '</table>'
+  temp.append(table)
+
+  context = dict(temp = temp) 
+  return render_template('display.html', **context)
+
+
 @app.route('/pay-add')
 def pay_add():
   return render_template('pay-add.html')
+
 
 @app.route('/pay-insert', methods=['POST'])
 def pay_insert():
@@ -286,10 +375,174 @@ def pay_insert():
   return redirect('/user')
 
 
+@app.route('/watchlist')
+def watchlist():
+  return render_template('watchlist.html')
+
+
+@app.route('/show-list', methods=['POST'])
+def show_list():
+
+  username = request.form['username']
+
+  if username == '':
+    return render_template('watchlist.html')
+
+  temp = []
+  table = '<table> <tr><th>list_id</th> <th>Seller name</th> <th>order_id</th>  <th>Title</th> <th>Category</th> <th>Returnable</th> <th>Price</th> <th>Shipping price</th> </tr>'
+
+  listings = g.conn.execute("SELECT list_id FROM watches WHERE username = %s", username)
+  for listing in listings:
+    list_id = listing['list_id']
+    cursor = g.conn.execute("SELECT * FROM  listings WHERE list_id = %s", list_id) 
+    for result in cursor:
+      table = table + '<tr>' + '<td>' + str(result['list_id']) + '</td>' + '<td>' + result['username'] + '</td>' + '<td>' + str(result['order_id'])
+      table = table + '</td>' + '<td>' + result['title'] + '</td>' + '<td>' + str(result['category']) + '</td>' + '<td>' + str(result['returnable']) 
+      table = table + '</td>' + '<td>' + str(result['price']) +  '</td>' + '<td>' + str(result['shipping_price']) + '</td>' + '</tr>' 
+    cursor.close()
+ 
+  listings.close()
+  table = table + '</table>'
+  temp.append(table)
+
+  context = dict(temp = temp) 
+  return render_template('display.html', **context)
+
+
+@app.route('/savedsellers')
+def saved_sellers():
+  return render_template('savedsellers.html')
+
+
+@app.route('/following', methods=['POST'])
+def following(): 
+  username = request.form['username']
+
+  if username == '':
+    return render_template('savedsellers.html')
+
+  temp = []
+  table = '<table> <tr><th>Seller name</th> <th>Store Name</th>  <th>Store Description</th> <th>Seller Rating</th> </tr>'
+
+  sellers = g.conn.execute("SELECT seller_username FROM follows WHERE customer_username = %s", username)
+  for seller in sellers:
+    seller_name = seller['seller_username']
+    cursor = g.conn.execute("SELECT * FROM  sellers WHERE username = %s", seller_name) 
+    for result in cursor:
+      table = table + '<tr>' + '<td>' + result['username'] + '</td>' + '<td>' + str(result['store_name']) + '</td>' + '<td>'
+      table = table + str(result['store_description']) + '</td>' + '<td>' + str(result['rating']) + '</td>' + '</tr>' 
+    cursor.close()
+ 
+  sellers.close()
+  table = table + '</table>'
+  temp.append(table)
+
+  context = dict(temp = temp) 
+  return render_template('display.html', **context)
+
+
 @app.route('/order')
 def order():
-  return render_template('order.html')
+  
+  temp = []
+  table = '<table> <tr><th>list_id</th> <th>Seller name</th> <th>order_id</th>  <th>Title</th> <th>Category</th> <th>Returnable</th> <th>Price</th> <th>Shipping price</th> </tr>'
 
+  cursor = g.conn.execute("SELECT * FROM listings WHERE order_id ISNULL")
+  for result in cursor:
+    table = table + '<tr>' + '<td>' + str(result['list_id']) + '</td>' + '<td>' + result['username'] + '</td>' + '<td>' + str(result['order_id'])
+    table = table + '</td>' + '<td>' + result['title'] + '</td>' + '<td>' + str(result['category']) + '</td>' + '<td>' + str(result['returnable']) 
+    table = table + '</td>' + '<td>' + str(result['price']) +  '</td>' + '<td>' + str(result['shipping_price']) + '</td>' + '</tr>' 
+  cursor.close()
+ 
+  table = table + '</table>'
+  temp.append(table)
+
+  context = dict(temp = temp) 
+  return render_template('order.html', **context)
+
+
+@app.route('/place-order', methods=['POST'])
+def place_order():
+  username = request.form['username']
+  aid = request.form['aid']
+  order = request.form['list']
+  listings = order.split(",")
+  order_date = str(datetime.date.today())
+  order_id = randint(100000, 999999)
+  valid = True
+  amount = 0
+
+  for l in listings:
+   list_id = int(l)
+   data = g.conn.execute("SELECT order_id FROM listings WHERE list_id = %s", list_id)
+   for d in data:
+     if d['order_id'] != None:
+       valid = False
+   data.close()
+
+  if not valid:
+    return render_template('failed.html')
+
+  for l in listings:
+   list_id = int(l)
+   data = g.conn.execute("SELECT * FROM listings WHERE list_id = %s", list_id) 
+   for d in data:   
+     amount = amount + d['price'] + d['shipping_price']
+
+  g.conn.execute("INSERT INTO orders VALUES (%s, %s, %s, %s, %s, null)", (order_id, username, aid, amount, order_date))
+
+  for l in listings:
+   list_id = int(l)
+   g.conn.execute("UPDATE listings SET order_id = %s WHERE list_id = %s", (order_id, list_id))
+
+  return render_template('success.html')
+
+
+@app.route('/orderhistory')
+def orderhistory():
+  return render_template('orderhistory.html')
+
+
+@app.route('/order-calc', methods=['POST'])
+def order_calc():
+  username = request.form['username']
+
+  if username == '':
+    return render_template('orderhistory.html')
+  
+  temp = []
+  table = '<table> <tr><th>Order ID</th> <th>Customer Username</th> <th>Address ID</th> <th>Amount</th> <th>Placed On</th> <th>Tracking Number</th> </tr>'
+  cursor = g.conn.execute("SELECT * FROM orders WHERE username = %s", username)
+  for result in cursor:
+    table = table + '<tr>' + '<td>' + str(result['order_id']) + '</td>' + '<td>' + result['username'] + '</td>' + '<td>' + str(result['aid']) 
+    table = table + '</td>' + '<td>' + str(result['amount']) + '</td>' + '<td>' + str(result['placed_on']) + '</td>' + '<td>'
+    table = table +  str(result['tracking_num']) + '</td>' + '</tr>'  
+  cursor.close()
+  table = table + '</table>'
+  temp.append(table)
+
+  context = dict(temp = temp) 
+  return render_template('showhistory.html', **context)
+
+
+@app.route('/orderlist', methods=['POST'])
+def ordlist():
+  order_id = request.form['order_id']
+
+  temp = []
+  table = '<table> <tr><th>list_id</th> <th>Seller name</th> <th>order_id</th>  <th>Title</th> <th>Category</th> <th>Returnable</th> <th>Price</th> <th>Shipping price</th> </tr>'
+
+  cursor = g.conn.execute("SELECT * FROM  listings WHERE order_id = %s", order_id)
+  for result in cursor:
+    table = table + '<tr>' + '<td>' + str(result['list_id']) + '</td>' + '<td>' + result['username'] + '</td>' + '<td>' + str(result['order_id'])
+    table = table + '</td>' + '<td>' + result['title'] + '</td>' + '<td>' + str(result['category']) + '</td>' + '<td>' + str(result['returnable']) 
+    table = table + '</td>' + '<td>' + str(result['price']) +  '</td>' + '<td>' + str(result['shipping_price']) + '</td>' + '</tr>' 
+  cursor.close()
+  table = table + '</table>'
+  temp.append(table)
+
+  context = dict(temp = temp) 
+  return render_template('listed.html', **context)
 
 
 @app.route('/login')

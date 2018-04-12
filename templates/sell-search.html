@@ -1,0 +1,54 @@
+<html>
+ <body>
+  <p> You can search sellers by seller name, store name and their rating range  </p>
+
+  <form method ="POST" action ="/sell-query">
+   Search By:
+   <select name="selection">
+   <option value="seller_name">Seller Name</option>
+   <option value="store_name">Store Name</option> 
+   <option value="rating">Rating Range</option>
+   </select>
+
+   <input type="text" name="input"><br>
+
+   Minimum Rating:
+   <select name="rmin">
+   <option value="0" selected>0</option>
+   <option value="1">1</option>
+   <option value="2">2</option>
+   <option value="3">3</option>
+   <option value="4">4</option>
+   <option value="5">5</option>
+   <option value="6">6</option>
+   <option value="7">7</option>
+   <option value="8">8</option>
+   <option value="9">9</option>
+   <option value="10">10</option>
+   </select><br>
+
+   Maximum Rating:
+   <select name="rmax">
+   <option value="0">0</option>
+   <option value="1">1</option>
+   <option value="2">2</option>
+   <option value="3">3</option>
+   <option value="4">4</option>
+   <option value="5">5</option>
+   <option value="6">6</option>
+   <option value="7">7</option>
+   <option value="8">8</option>
+   <option value="9">9</option>
+   <option value="10" selected>10</option>
+   </select><br>
+
+   <br>
+   <input type="submit" value="Search!">
+
+   <br><br>
+   <a href="/user">Back to User Dashboard</a>
+
+  </form>
+ </body>
+</html>
+
